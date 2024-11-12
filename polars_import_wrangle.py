@@ -39,5 +39,47 @@ parquet_files
 pldf = [pl.read_parquet(file) for file in parquet_files ]
 # %%
 
-mobile_df = pl.concat(pldf[0:2], how="vertical_relaxed")
+mobile_df = pl.concat(pldf, how="diagonal_relaxed")
 # %%
+mobile_df.glimpse() 
+
+#%%
+mobile_df.write_parquet("data/weca_parquet/weca_2021.parquet")
+
+#%%
+del pldf
+#%%
+mobile_df = pl.read_parquet("data/weca_parquet/weca_2021.parquet")
+
+#%%
+
+mobile_df.select(pl.all().approx_n_unique())
+
+#%%
+mobile_df.schema
+
+#%%
+
+mobile_df.glimpse()
+#%%
+u = (mobile_df
+.unique(pl.col("pci_top1_3uk"))
+)
+
+
+
+
+#%%
+schemas = [df.schema for df in pldf]
+print(schemas)
+#%%
+type( schemas[0])
+#%%
+
+#%%
+# %%
+schema_dicts = [dict(schema) for schema in schemas]
+
+#%%
+schema_dicts
+
