@@ -59,6 +59,7 @@ def download_zip_files(urls: list, output_dir: str = "data") -> None:
         raise OSError(f"Error creating output directory: {str(e)}")
 
 #%%
+    # these urls scraped from the Ofcom website
 urls = [
 "https://static.ofcom.org.uk/static/research/mobile-signal-strength-data/5g-nr-2020-mobile-signal-measurement-data.zip",
 "https://static.ofcom.org.uk/static/research/mobile-signal-strength-data/5g-nr-dec20-may21-mobile-signal-measurement-data.zip",
