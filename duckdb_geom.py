@@ -4,6 +4,9 @@ import duckdb
 #%%
 
 con = duckdb.connect(database='data/mobile_clean.duckdb', read_only=False)
+
+
+## comment
 #%%
 con.sql("CREATE TABLE mobile_clean AS SELECT * FROM read_parquet('data/weca_parquet/weca_mobile_clean.parquet')")
 #%%
