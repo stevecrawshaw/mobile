@@ -17,40 +17,40 @@ ATTACH 'data/ofcom.duckdb' AS ofcom;
 ATTACH '' AS weca_postgres (TYPE POSTGRES, SECRET weca_postgres);
 
 .databases
-.tables
 .help 
-
+.tables
 
 FROM weca_postgres.os.grid_1km LIMIT 2;
 
 -- convert the hex string to a geometry object
--- and filter to only the grid squares in ST grids, which cover our region
+-- and filter to only the grid squares in ST grids - [South West England], which cover our region
 
 SELECT plan_no, shape.from_hex().ST_GeomFromWKB() AS geom
 FROM weca_postgres.os.grid_1km
 WHERE plan_no LIKE 'ST%'
 LIMIT 2;
-
+-- Now create a table to store the grid data
 CREATE TABLE IF NOT EXISTS ofcom.os_gb_grids AS
 SELECT plan_no, shape.from_hex().ST_GeomFromWKB() AS geom
 FROM weca_postgres.os.grid_1km
 WHERE plan_no LIKE 'ST%';
 
+-- Now lets look at the signal strength data
 -- how many (million) rows in the CSV?
 SELECT COUNT(*)
 .round(-6)
-.fdiv(1e6) 
+.fdiv(1e6) AS rows_million
 FROM read_csv_auto('data/nr_2022_2.csv');
 
 -- create persistent storage for the data within the region
 -- using a bounding box filter
+-- the source data has lat \ long columns
 CREATE TABLE ofcom.nr_2022_2_tbl AS 
 SELECT * FROM read_csv_auto('data/nr_2022_2.csv')
 WHERE 
 (latitude BETWEEN 51.270 AND 51.9) 
 AND 
 (longitude BETWEEN -3.021 AND -2.252);
-
 
 FROM ofcom.nr_2022_2_tbl LIMIT 2;
 .mode line
@@ -74,6 +74,7 @@ SELECT geom FROM ofcom.nr_2022_2_tbl LIMIT 2;
 .mode duckbox
 
 -- clip (intersect) the point data to the grid data and save in a view
+-- this assigns a grid square to each point
 CREATE OR REPLACE VIEW labelled_point_vw AS
 SELECT ofcom.os_gb_grids.plan_no
     , COLUMNS('rssi*|sinr*|pci*')
@@ -96,7 +97,12 @@ FROM ofcom.os_gb_grids
 JOIN cte_grid_stats
 ON ofcom.os_gb_grids.plan_no = cte_grid_stats.plan_no;
 
--- export to a GIS compatible file
+-- Introspect the view, filtering on columns that are not null
+FROM grid_stats_geom_vw
+WHERE (rssi_top1_3uk IS NOT NULL) AND (rssi_top1_ee IS NOT NULL)
+LIMIT 2;
+
+-- See if we can export to a modern GIS format like FlatGeoBuf
 SELECT * FROM ST_Drivers()
 WHERE short_name LIKE '%Flat%';
 
