@@ -18,8 +18,10 @@ ATTACH 'data/ofcom.duckdb' AS ofcom;
 ATTACH '' AS weca_postgres (TYPE POSTGRES, SECRET weca_postgres);
 
 .databases
-.help 
+.help
 .tables
+
+.tables %1km%
 
 FROM weca_postgres.os.grid_1km LIMIT 2;
 
@@ -38,7 +40,8 @@ SELECT plan_no, shape.from_hex().ST_GeomFromWKB() AS geom
 FROM weca_postgres.os.grid_1km
 WHERE plan_no LIKE 'ST%';
 
--- Now lets look at the signal strength data
+DESCRIBE ofcom.os_gb_grids;
+-- ------------------Now lets look at the signal strength data-------------------------------
 -- how many (million) rows in the CSV?
 SELECT COUNT(*)
 .round(-6)
