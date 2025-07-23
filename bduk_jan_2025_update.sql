@@ -36,7 +36,7 @@ DETACH weca_postgres;
 FROM ofcom.lep_postcode_geom_tbl LIMIT 2;
 
 .tables
-
+-- multiple csvs union
 CREATE OR REPLACE TABLE ofcom.bduk_202501_sw_tbl AS
 SELECT * FROM read_csv('data/202501_BDUK_uprn_release_south_west/*.csv');
 
@@ -48,6 +48,7 @@ SELECT COUNT(*) FROM ofcom.bduk_202501_sw_tbl;
 
 
 -- pivoted subsidy control status by postcode
+-- for later joining
 CREATE OR REPLACE TABLE ofcom.subsidy_control_pivot_2025_tbl AS
 WITH scs_cte AS(
 PIVOT (FROM ofcom.bduk_202501_sw_tbl)
@@ -58,7 +59,7 @@ SELECT * FROM scs_cte
 WHERE local_authority_district_ons_code IN('E06000022', 'E06000023', 'E06000024', 'E06000025');
 
 FROM ofcom.subsidy_control_pivot_2025_tbl LIMIT 2;
-
+-- function to aggregate multiple suppliers and contracts into a comma separated string
 CREATE OR REPLACE FUNCTION stringlist(col) AS list(col).list_distinct().array_to_string(e'\n');
 
 
