@@ -1,6 +1,7 @@
 duckdb
 
---INSTALL SPATIAL;
+INSTALL SPATIAL;
+
 LOAD SPATIAL;
 
 ATTACH 'data/ofcom.duckdb' AS ofcom;
